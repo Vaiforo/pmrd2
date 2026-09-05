@@ -1,0 +1,5 @@
+outs:
+- md5: e3ac1364345fdea63a4f32494a41828c
+  size: 875701
+  hash: md5
+  path: minidataset.csv
