@@ -1,14 +1,17 @@
 """Загрузить Mushroom и показать частоты кодов запаха только в train.
 
 Запуск из корня репозитория: ``python -m src.data.prepare``.
-Скрипт не назначает редкие категории: их выбирают после просмотра отчёта.
+Скрипт выводит все частоты и помечает редкие коды по порогу 10%.
 """
 
+import hashlib
 from pathlib import Path
 
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
+
+from src.features.rare_odor import RARE_THRESHOLD
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_PATH = PROJECT_ROOT / "data" / "raw" / "mushroom.csv"
@@ -17,6 +20,9 @@ OPENML_DATA_ID = 24
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 TARGET_COLUMN = "class"
+EXPECTED_RAW_SHA256 = (
+    "6a2195026f61fbe898893fc40b5e64cab4c485aab611ac964b8974a0a1f01ce1"
+)
 
 # Расшифровка кодов из описания Mushroom в OpenML и UCI.
 ODOR_NAMES = {
@@ -48,6 +54,12 @@ def load_dataset() -> pd.DataFrame:
         )
         RAW_PATH.parent.mkdir(parents=True, exist_ok=True)
         dataset.frame.to_csv(RAW_PATH, index=False, lineterminator="\n")
+
+    checksum = hashlib.sha256(RAW_PATH.read_bytes()).hexdigest()
+    if checksum != EXPECTED_RAW_SHA256:
+        raise ValueError(
+            "CSV не совпадает с зафиксированным снимком Mushroom."
+        )
 
     # dtype=object сохраняет номинальный характер всех исходных признаков.
     frame = pd.read_csv(RAW_PATH, dtype=object, na_values=["?"])
@@ -91,6 +103,7 @@ def describe_odor(features_train: pd.DataFrame) -> pd.DataFrame:
     report = counts.rename_axis("code").reset_index(name="train_count")
     report["meaning"] = report["code"].map(ODOR_NAMES).fillna("Пропуск")
     report["train_percent"] = 100 * report["train_count"] / len(features_train)
+    report["is_rare"] = report["train_percent"] < 100 * RARE_THRESHOLD
     return report.sort_values(["train_count", "code"]).reset_index(drop=True)
 
 
@@ -113,7 +126,7 @@ def main() -> None:
     print("\nПропуски в исходных данных:")
     missing = frame.isna().sum()
     print(missing[missing > 0].to_string())
-    print("\nРедкие коды пока не выбраны.")
+    print(f"\nРедкий код: частота строго меньше {RARE_THRESHOLD:.0%}.")
 
 
 if __name__ == "__main__":

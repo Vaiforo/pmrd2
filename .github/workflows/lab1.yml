@@ -1,0 +1,82 @@
+name: Reproduce laboratory 1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [lab1]
+    paths:
+      - ".github/workflows/lab1.yml"
+      - "src/**"
+      - "scripts/**"
+      - "tests/**"
+      - "requirements.txt"
+      - "pyproject.toml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lab1-reproduction
+  cancel-in-progress: false
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lab1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned Python environment
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements.txt
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+      - name: Check code and dependencies
+        run: |
+          ruff check --fix src tests scripts
+          ruff format src tests scripts
+          ruff check src tests scripts
+          ruff format --check src tests scripts
+          python -m pip check
+          python -m pytest -q
+      - name: Download, train and version data
+        run: |
+          python -m src.data.prepare
+          python -m src.models.train
+          dvc add data/raw/mushroom.csv
+          dvc add data/processed/train.csv data/processed/test.csv
+          dvc status data/raw/mushroom.csv.dvc data/processed/train.csv.dvc data/processed/test.csv.dvc
+          python -m src.models.predict data/processed/test.csv
+      - name: Verify clean reproduction and execute notebook
+        run: |
+          python scripts/verify_reproducibility.py
+          python scripts/build_notebook.py
+      - name: Capture actual terminal screenshots
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb xterm imagemagick tree fonts-dejavu-core
+          xvfb-run -a -s "-screen 0 1280x960x24" python scripts/screenshots.py
+      - name: Save verified artifacts to lab1
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src tests scripts data/raw/.gitignore data/raw/mushroom.csv.dvc
+          git add data/processed/.gitignore data/processed/*.dvc
+          git add models reports notebooks
+          if ! git diff --cached --quiet; then
+            git commit -m "Save reproduced lab1 model, reports and screenshots [skip ci]"
+            git push origin HEAD:lab1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mushroom-lab1-results
+          path: |
+            models/mushroom.joblib
+            reports/
+            notebooks/lab1_review.ipynb
+          retention-days: 7
