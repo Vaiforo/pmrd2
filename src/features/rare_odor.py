@@ -40,8 +40,10 @@ class RareOdorCounter(TransformerMixin, BaseEstimator):
             raise ValueError("Нужны уникальные колонки и признак odor.")
         if OUTPUT_COLUMN in features:
             raise ValueError(f"Признак {OUTPUT_COLUMN} уже существует.")
-        valid = features["odor"].dropna().map(
-            lambda value: isinstance(value, str) and len(value) == 1
+        valid = (
+            features["odor"]
+            .dropna()
+            .map(lambda value: isinstance(value, str) and len(value) == 1)
         )
         if not valid.all():
             raise ValueError("odor должен содержать однобуквенные коды.")

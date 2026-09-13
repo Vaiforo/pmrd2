@@ -12,7 +12,9 @@ def main() -> None:
     """Собрать обзор из выполняемых ячеек, не дублируя обучение."""
     notebook = nbformat.v4.new_notebook()
     notebook.metadata.kernelspec = {
-        "display_name": "Python 3", "language": "python", "name": "python3"
+        "display_name": "Python 3",
+        "language": "python",
+        "name": "python3",
     }
     notebook.cells = [
         nbformat.v4.new_markdown_cell(

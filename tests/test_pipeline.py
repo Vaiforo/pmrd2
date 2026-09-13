@@ -22,12 +22,11 @@ def test_pipeline_imputes_and_handles_unseen_categories(tmp_path):
     categorical = preprocessor.named_transformers_["categorical"]
     assert numeric.named_steps["imputer"].statistics_.tolist() == [0.0]
     assert categorical.named_steps["imputer"].statistics_.tolist() == [
-        "n", "b"
+        "n",
+        "b",
     ]
     assert f"numeric__{OUTPUT_COLUMN}" in model[:-1].get_feature_names_out()
-    test = pd.DataFrame(
-        {"odor": ["z", np.nan], "stalk-root": ["q", np.nan]}
-    )
+    test = pd.DataFrame({"odor": ["z", np.nan], "stalk-root": ["q", np.nan]})
     prepared = model[:-1].transform(test)
     if hasattr(prepared, "toarray"):
         prepared = prepared.toarray()

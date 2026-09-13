@@ -19,9 +19,17 @@ def commands_for(section: str) -> list[list[str]]:
     if section == "structure":
         return [
             [
-                "tree", "-d", "-L", "3",
-                "-I", "__pycache__|.git|.venv|.cache",
-                "data", "notebooks", "src", "models", "reports",
+                "tree",
+                "-d",
+                "-L",
+                "3",
+                "-I",
+                "__pycache__|.git|.venv|.cache",
+                "data",
+                "notebooks",
+                "src",
+                "models",
+                "reports",
             ],
             ["find", "src", "-name", "*.py"],
         ]
@@ -29,7 +37,10 @@ def commands_for(section: str) -> list[list[str]]:
         return [
             [python, "-m", "dvc", "status"],
             [
-                python, "-m", "dvc", "status",
+                python,
+                "-m",
+                "dvc",
+                "status",
                 "data/raw/mushroom.csv.dvc",
                 "data/processed/train.csv.dvc",
                 "data/processed/test.csv.dvc",
@@ -41,9 +52,11 @@ def commands_for(section: str) -> list[list[str]]:
 def worker(section: str, ready_path: Path) -> None:
     """Выполнить команды внутри настоящего xterm и оставить окно открытым."""
     for command in commands_for(section):
-        shown = ["python", *command[1:]] if (
-            command[0] == sys.executable
-        ) else command
+        shown = (
+            ["python", *command[1:]]
+            if (command[0] == sys.executable)
+            else command
+        )
         print("$ " + " ".join(shown), flush=True)
         result = subprocess.run(command, cwd=ROOT, check=True)
         if result.returncode != 0:
@@ -62,12 +75,26 @@ def main() -> None:
             ready = Path(directory) / section
             process = subprocess.Popen(
                 [
-                    "xterm", "-fa", "DejaVu Sans Mono", "-fs", "12",
-                    "-geometry", "122x43+0+0",
-                    "-bg", "#0d1117", "-fg", "#e6edf3",
-                    "-title", f"Mushroom Lab 1 - {section}",
-                    "-e", sys.executable, "-u", str(Path(__file__).resolve()),
-                    "--worker", section, str(ready),
+                    "xterm",
+                    "-fa",
+                    "DejaVu Sans Mono",
+                    "-fs",
+                    "12",
+                    "-geometry",
+                    "122x43+0+0",
+                    "-bg",
+                    "#0d1117",
+                    "-fg",
+                    "#e6edf3",
+                    "-title",
+                    f"Mushroom Lab 1 - {section}",
+                    "-e",
+                    sys.executable,
+                    "-u",
+                    str(Path(__file__).resolve()),
+                    "--worker",
+                    section,
+                    str(ready),
                 ],
                 cwd=ROOT,
             )
@@ -83,7 +110,9 @@ def main() -> None:
                 time.sleep(0.5)
                 subprocess.run(
                     [
-                        "import", "-window", "root",
+                        "import",
+                        "-window",
+                        "root",
                         str(output / f"lab1-{section}.png"),
                     ],
                     check=True,

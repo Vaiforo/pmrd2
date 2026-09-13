@@ -1,0 +1,21 @@
+{
+  "accuracy": 1.0,
+  "roc_auc": 1.0,
+  "f1_poisonous": 1.0,
+  "test_rows": 1625,
+  "errors": 0,
+  "confusion_matrix_labels": [
+    "e",
+    "p"
+  ],
+  "confusion_matrix": [
+    [
+      842,
+      0
+    ],
+    [
+      0,
+      783
+    ]
+  ]
+}

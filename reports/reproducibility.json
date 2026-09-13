@@ -1,0 +1,39 @@
+{
+  "method": "Fresh OpenML download and training without data or caches",
+  "all_matched": true,
+  "dvc_pointers_matched": true,
+  "files": {
+    "data/raw/mushroom.csv": {
+      "match": true,
+      "sha256": "6a2195026f61fbe898893fc40b5e64cab4c485aab611ac964b8974a0a1f01ce1"
+    },
+    "data/processed/train.csv": {
+      "match": true,
+      "sha256": "175ba97da3a2ca18ba4be3a8b23116b98a580a628bd5cbe3f1459da32973e88f"
+    },
+    "data/processed/test.csv": {
+      "match": true,
+      "sha256": "97d4f6bc2754d52be3a645cb3d2c374351bb62851781c05e188fb7dd19d2e19e"
+    },
+    "models/mushroom.joblib": {
+      "match": true,
+      "sha256": "6917aa35fe8286ad8d299abef560da0b58725c8825032251810551e9b3084b26"
+    },
+    "reports/metrics.json": {
+      "match": true,
+      "sha256": "8f877947d65c0d9edf7420fd9a09f560447252898845276d5a184b710df4f021"
+    },
+    "reports/run_metadata.json": {
+      "match": true,
+      "sha256": "c92c8a4d8c60e88fbf33bea6b77dc8c811c0b15a6005ab8d63cca15774caf19f"
+    },
+    "reports/cv_results.csv": {
+      "match": true,
+      "sha256": "a858bd65ed8994b13120d7eb9f1ec30abdf50840c5e7d7a308b76fa20ed19525"
+    },
+    "reports/test_predictions.csv": {
+      "match": true,
+      "sha256": "c2d1db7c03db9a6d6a15e5658a2ce8b4df9ab84289be32c74db39e0f84a84c5b"
+    }
+  }
+}

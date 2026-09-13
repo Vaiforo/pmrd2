@@ -63,10 +63,9 @@ def main() -> None:
                 cwd=check_root,
                 check=True,
             )
-            if (
-                (ROOT / (name + ".dvc")).read_bytes()
-                != (check_root / (name + ".dvc")).read_bytes()
-            ):
+            if (ROOT / (name + ".dvc")).read_bytes() != (
+                check_root / (name + ".dvc")
+            ).read_bytes():
                 raise RuntimeError(f"DVC-указатель изменился: {name}")
     result = {
         "method": "Fresh OpenML download and training without data or caches",

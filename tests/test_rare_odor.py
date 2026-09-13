@@ -33,7 +33,8 @@ def test_missing_unknown_values_and_input_preservation():
     assert pd.isna(result.loc[4, OUTPUT_COLUMN])
     assert result.loc[99, OUTPUT_COLUMN] == 0
     assert transformer.get_feature_names_out().tolist() == [
-        "odor", OUTPUT_COLUMN
+        "odor",
+        OUTPUT_COLUMN,
     ]
 
 

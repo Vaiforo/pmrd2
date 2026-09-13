@@ -1,0 +1,21 @@
+OpenML Mushroom (ID 24), train=6499, test=1625
+Rare odor: frequency < 10%
+Rare symbols: a, c, l, m, p, s, y
+Best parameters: {'classifier__C': 10.0}
+Best mean CV ROC-AUC: 1.00000000
+Test accuracy: 1.00000000
+Test ROC-AUC: 1.00000000
+Test F1 (poisonous): 1.00000000
+Errors: 0 / 1625
+Confusion matrix [e, p]: [[842, 0], [0, 783]]
+Model saved: models/mushroom.joblib
+Reload check: predictions and probabilities identical
+
+              precision    recall  f1-score   support
+
+           e     1.0000    1.0000    1.0000       842
+           p     1.0000    1.0000    1.0000       783
+
+    accuracy                         1.0000      1625
+   macro avg     1.0000    1.0000    1.0000      1625
+weighted avg     1.0000    1.0000    1.0000      1625

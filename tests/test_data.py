@@ -7,9 +7,7 @@ from src.data.prepare import describe_odor, split_dataset
 
 def test_split_preserves_rows_and_target_alignment():
     """Train/test не пересекаются; цель соответствует исходным строкам."""
-    frame = pd.DataFrame(
-        {"odor": ["n", "a"] * 50, "class": ["e", "p"] * 50}
-    )
+    frame = pd.DataFrame({"odor": ["n", "a"] * 50, "class": ["e", "p"] * 50})
     train, test, y_train, y_test = split_dataset(frame)
     again = split_dataset(frame)
     assert len(train) == 80 and len(test) == 20

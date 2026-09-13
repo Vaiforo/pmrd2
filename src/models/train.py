@@ -52,9 +52,7 @@ def write_json(path: Path, value: dict) -> None:
     )
 
 
-def save_split(
-    features: pd.DataFrame, target: pd.Series, name: str
-) -> None:
+def save_split(features: pd.DataFrame, target: pd.Series, name: str) -> None:
     """Сохранить split и исходные индексы для проверки разделения."""
     frame = features.copy()
     frame[TARGET_COLUMN] = target
@@ -167,7 +165,12 @@ def main() -> None:
         "versions": {
             name: version(name)
             for name in (
-                "pandas", "numpy", "scipy", "scikit-learn", "joblib", "dvc"
+                "pandas",
+                "numpy",
+                "scipy",
+                "scikit-learn",
+                "joblib",
+                "dvc",
             )
         },
     }
