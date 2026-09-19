@@ -1,0 +1,130 @@
+"""Прочитать Mushroom и показать частоты кодов запаха только в train.
+
+Запуск из корня репозитория: ``python -m src.data.prepare``.
+Скрипт выводит все частоты и помечает редкие коды по порогу 10%.
+"""
+
+import hashlib
+from pathlib import Path
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+from src.features.rare_odor import RARE_THRESHOLD
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+RAW_PATH = PROJECT_ROOT / "data" / "raw" / "mushroom.csv"
+REPORT_PATH = PROJECT_ROOT / "reports" / "odor_frequencies.csv"
+OPENML_DATA_ID = 24
+RANDOM_STATE = 42
+TEST_SIZE = 0.2
+TARGET_COLUMN = "class"
+EXPECTED_RAW_SHA256 = (
+    "6a2195026f61fbe898893fc40b5e64cab4c485aab611ac964b8974a0a1f01ce1"
+)
+
+# Расшифровка кодов из описания Mushroom в OpenML и UCI.
+ODOR_NAMES = {
+    "a": "Миндальный",
+    "l": "Анисовый",
+    "c": "Креозотовый",
+    "y": "Рыбный",
+    "f": "Зловонный",
+    "m": "Затхлый",
+    "n": "Без запаха",
+    "p": "Резкий",
+    "s": "Пряный",
+}
+
+
+def load_dataset() -> pd.DataFrame:
+    """Прочитать и проверить локальный CSV без сетевых запросов.
+
+    Сначала пользователь запускает ``python -m src.data.download``.
+    ID 24 задаёт Mushroom версии 1. CSV хранит исходные признаки
+    без импутации и кодирования. Пустые ячейки и ``?`` — пропуски.
+    """
+    if not RAW_PATH.is_file():
+        raise FileNotFoundError(
+            "Датасет ещё не скачан. Выполните из корня проекта: "
+            "python -m src.data.download"
+        )
+
+    checksum = hashlib.sha256(RAW_PATH.read_bytes()).hexdigest()
+    if checksum != EXPECTED_RAW_SHA256:
+        raise ValueError(
+            "CSV не совпадает с зафиксированным снимком Mushroom."
+        )
+
+    # dtype=object сохраняет номинальный характер всех исходных признаков.
+    frame = pd.read_csv(RAW_PATH, dtype=object, na_values=["?"])
+    if frame.shape != (8124, 23):
+        raise ValueError(
+            "Для OpenML ID 24 ожидается 8124 строки и 23 колонки."
+        )
+    if set(frame[TARGET_COLUMN].dropna()) != {"e", "p"}:
+        raise ValueError("Целевая переменная должна содержать классы e и p.")
+    if frame[TARGET_COLUMN].isna().any():
+        raise ValueError("Целевая переменная содержит пропуски.")
+    return frame
+
+
+def split_dataset(
+    frame: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    """Разделить данные 80/20, сохранив пропорции классов и исходные индексы.
+
+    Общая функция разбиения нужна, чтобы частоты категорий и последующее
+    обучение использовали одну и ту же обучающую выборку.
+    """
+    features = frame.drop(columns=TARGET_COLUMN)
+    target = frame[TARGET_COLUMN]
+    return train_test_split(
+        features,
+        target,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE,
+        stratify=target,
+    )
+
+
+def describe_odor(features_train: pd.DataFrame) -> pd.DataFrame:
+    """Посчитать все коды odor в train, от самого редкого к частому.
+
+    Доля считается от общего числа обучающих строк. Пропуски, если они
+    появятся, выводятся отдельной строкой и не считаются кодом запаха.
+    """
+    counts = features_train["odor"].value_counts(dropna=False)
+    report = counts.rename_axis("code").reset_index(name="train_count")
+    report["meaning"] = report["code"].map(ODOR_NAMES).fillna("Пропуск")
+    report["train_percent"] = 100 * report["train_count"] / len(features_train)
+    report["is_rare"] = report["code"].notna() & (
+        report["train_percent"] < 100 * RARE_THRESHOLD
+    )
+    return report.sort_values(["train_count", "code"]).reset_index(drop=True)
+
+
+def main() -> None:
+    """Сохранить таблицу частот и вывести частоты всех кодов запаха."""
+    frame = load_dataset()
+    features_train, features_test, _, _ = split_dataset(frame)
+    report = describe_odor(features_train)
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    report.to_csv(REPORT_PATH, index=False, float_format="%.6f")
+
+    print(f"OpenML ID: {OPENML_DATA_ID}; размер данных: {frame.shape}")
+    print(f"Train: {len(features_train)}; test: {len(features_test)}")
+    print(f"random_state={RANDOM_STATE}; stratify=class")
+    print(
+        report.to_string(
+            index=False, float_format=lambda value: f"{value:.2f}"
+        )
+    )
+    print("\nПропуски в исходных данных:")
+    missing = frame.isna().sum()
+    print(missing[missing > 0].to_string())
+    print(f"\nРедкий код: частота строго меньше {RARE_THRESHOLD:.0%}.")
+
+
+if __name__ == "__main__":
+    main()
