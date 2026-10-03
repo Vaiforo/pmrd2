@@ -1,0 +1,5 @@
+outs:
+- md5: 457dd15962fba527b1d8cac2c9d391cc
+  size: 11066
+  hash: md5
+  path: mushroom.joblib
