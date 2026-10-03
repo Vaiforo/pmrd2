@@ -1,0 +1,5 @@
+outs:
+- md5: f238528a757aa45de1bb5f7e0e8cb08e
+  size: 20328
+  hash: md5
+  path: order_items.csv
